@@ -1,4 +1,4 @@
-package com.virtualpairprogrammers;
+package spark.recipes;
 
 import java.io.Serializable;
 import java.util.Arrays;

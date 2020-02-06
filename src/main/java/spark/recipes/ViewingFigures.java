@@ -1,4 +1,4 @@
-package com.virtualpairprogrammers;
+package spark.recipes;
 
 import java.util.ArrayList;
 import java.util.List;
