@@ -1,4 +1,4 @@
-package spark.recipes;
+package spark.recipes.rdd;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -10,6 +10,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
 import scala.Tuple2;
+import spark.recipes.Util;
 
 /**
  * In this example we try to find the 10 most frequent words inside a data set consisting of the captions of

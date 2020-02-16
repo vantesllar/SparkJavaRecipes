@@ -1,4 +1,4 @@
-package spark.recipes;
+package spark.recipes.rdd;
 
 import java.util.ArrayList;
 import java.util.List;
