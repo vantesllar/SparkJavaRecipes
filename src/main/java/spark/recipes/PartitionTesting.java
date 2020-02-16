@@ -29,7 +29,7 @@ public class PartitionTesting {
 		System.out.println("Initial RDD Partition Size: " + initialRdd.getNumPartitions());
 		
 		JavaPairRDD<String, String> warningsAgainstDate = initialRdd.mapToPair( inputLine -> {
-			String[] cols = inputLine.split(":");
+			String[] cols = inputLine.split(",");
 			String level = cols[0];
 			String date = cols[1];
 			return new Tuple2<>(level, date);

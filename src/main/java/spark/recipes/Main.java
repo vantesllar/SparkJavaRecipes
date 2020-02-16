@@ -5,14 +5,12 @@ import org.apache.log4j.Logger;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
-import org.apache.spark.sql.types.DataType;
 import org.apache.spark.sql.types.DataTypes;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.apache.spark.sql.functions.*;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class Main {
 
@@ -30,27 +28,22 @@ public class Main {
 				.config("spark.sql.warehouse.dir", "file:///c:/tmp/")
 				.getOrCreate();
 		
-		Dataset<Row> dataset = session.read().option("header", true).csv("src/main/resources/biglog.txt");
+		Dataset<Row> dataSet = session.read().option("header", true).csv("src/main/resources/biglog.txt");
 
-//        Dataset<Row> results = dataset
-//                .select(col("level"),
-//                        date_format(col("datetime"), "MMMM").alias("month"),
-//                        date_format(col("datetime"), "M").alias("monthnum").cast(DataTypes.IntegerType))
-//                .groupBy(col("level"), col("month"), col("monthnum"))
-//                .count()
-//                .orderBy("monthnum")
-//                .drop(col("monthnum"));
+        SimpleDateFormat monthFormat = new SimpleDateFormat("MMMM", Locale.ENGLISH);
+        session.udf().register("getMonthNumber", (String month) -> {
+            Date date = monthFormat.parse(month);
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(date);
+            return calendar.get(Calendar.MONTH);
+        }, DataTypes.IntegerType);
 
-        String[] columns = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
+        dataSet.createOrReplaceTempView("logs");
 
-        Dataset<Row> results = dataset
-                .select(col("level"),
-                        date_format(col("datetime"), "MMMM").alias("month"),
-                        date_format(col("datetime"), "M").alias("monthnum").cast(DataTypes.IntegerType))
-                .groupBy(col("level"))
-                .pivot("month", Arrays.asList(columns))
-                .count()
-                .na().fill(0);
+        Dataset<Row> results = session.sql(
+                "select level, date_format(datetime, 'MMMM') as month, count(1) as total " +
+                        "from logs group by level, month order by getMonthNumber(month), level"
+        );
 
         results.show(100);
 	}

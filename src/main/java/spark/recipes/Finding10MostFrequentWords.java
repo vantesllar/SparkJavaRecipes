@@ -11,7 +11,11 @@ import org.apache.spark.api.java.JavaSparkContext;
 
 import scala.Tuple2;
 
-public class Find10MostFrequentWords {
+/**
+ * In this example we try to find the 10 most frequent words inside a data set consisting of the captions of
+ * different courses, using the Spark's Java API, i.e., the RDDs and its methods.
+ */
+public class Finding10MostFrequentWords {
 
 	@SuppressWarnings("resource")
 	public static void main(String[] args) {

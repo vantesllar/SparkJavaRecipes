@@ -13,15 +13,17 @@ import org.apache.spark.api.java.JavaSparkContext;
 import scala.Tuple2;
 
 /**
- * This class is used in the chapter late in the course where we analyse viewing figures.
- * You can ignore until then.
+ * In this example we analyse the popularity of different courses, based on the number of chapters per course,
+ * the number of chapters seen by users and the number of chapters seen per course,
+ * using the Spark's Java API, i.e., the RDDs and its methods.
  */
-public class AnalyseCoursePopularity
-{
+public class AnalysingCoursePopularity {
+
 	@SuppressWarnings("resource")
-	public static void main(String[] args)
-	{
-		System.setProperty("hadoop.home.dir", "D:/cursos/spark/Practicals/winutils-extra/hadoop");
+	public static void main(String[] args) {
+
+        // The following property has to be set only on windows environments
+        System.setProperty("hadoop.home.dir", "D:/cursos/spark/Practicals/winutils-extra/hadoop");
 		Logger.getLogger("org.apache").setLevel(Level.WARN);
 
 		SparkConf conf = new SparkConf().setAppName("startingSpark").setMaster("local[*]");
