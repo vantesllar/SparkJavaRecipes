@@ -1,4 +1,4 @@
-package spark.recipes.mllib;
+package spark.examples.mllib;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;

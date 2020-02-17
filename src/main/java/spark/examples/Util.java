@@ -1,4 +1,4 @@
-package spark.recipes;
+package spark.examples;
 
 import java.io.BufferedReader;
 import java.io.InputStream;

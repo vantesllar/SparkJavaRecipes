@@ -1,7 +1,10 @@
-package spark.recipes.mllib;
+package spark.examples.mllib;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.spark.ml.Pipeline;
+import org.apache.spark.ml.PipelineModel;
+import org.apache.spark.ml.PipelineStage;
 import org.apache.spark.ml.evaluation.RegressionEvaluator;
 import org.apache.spark.ml.feature.OneHotEncoderEstimator;
 import org.apache.spark.ml.feature.StringIndexer;
@@ -18,7 +21,7 @@ import org.apache.spark.sql.SparkSession;
 
 import static org.apache.spark.sql.functions.col;
 
-public class HousePriceAnalysis {
+public class HousePriceAnalysisWithPipelines {
 
     public static void main(String[] args) {
 
@@ -42,81 +45,38 @@ public class HousePriceAnalysis {
                 .option("inferSchema", true)
                 .csv("src/main/resources/kc_house_data.csv");
 
-//        dataSet.printSchema();
-//        dataSet.describe().show();
-
-        /*
-         * 2. Feature selection
-         */
-        // We choose to eliminate these variables from this analysis after visual inspection
-        dataSet = dataSet.drop("id", "date", "view", "yr_renovated", "lat", "long");
-
-        // Showing variables correlation with the price
-        for (String col : dataSet.columns()) {
-            double correlation = dataSet.stat().corr("price", col);
-            System.out.println("Correlation between price and " + col + " is " + correlation);
-        }
-
-        // We remove this variables after knowing their correlation with the price
-        dataSet = dataSet.drop("sqft_lot", "sqft_lot15", "yr_built", "sqft_living15");
-
-        // Showing variables correlation among them
-        for (String col1 : dataSet.columns()) {
-            for (String col2 : dataSet.columns()) {
-                double correlation = dataSet.stat().corr(col1, col2);
-                System.out.println("Correlation between " + col1 + " and " + col2 + " is " + correlation);
-            }
-        }
-
         // Creating a new variable
-        dataSet = dataSet.withColumn("sqft_above_percentage", col("sqft_above").divide(col("sqft_living")));
+        dataSet = dataSet
+                .withColumn("sqft_above_percentage", col("sqft_above").divide(col("sqft_living")))
+                .withColumnRenamed("price", "label");
+
+        // Split data intro train, test and holdOut
+        Dataset<Row>[] dataSplits = dataSet.randomSplit(new double[]{0.8, 0.2});
+        Dataset<Row> trainAndTest = dataSplits[0];
+        Dataset<Row> holdOut = dataSplits[1];
 
         // Dealing with non numerical values
         StringIndexer conditionIndexer = new StringIndexer()
                 .setInputCol("condition")
                 .setOutputCol("conditionIndex");
-        dataSet = conditionIndexer.fit(dataSet).transform(dataSet);
 
         StringIndexer gradeIndexer = new StringIndexer()
                 .setInputCol("grade")
                 .setOutputCol("gradeIndex");
-        dataSet = gradeIndexer.fit(dataSet).transform(dataSet);
 
         StringIndexer zipcodeIndexer = new StringIndexer()
                 .setInputCol("zipcode")
                 .setOutputCol("zipcodeIndex");
-        dataSet = zipcodeIndexer.fit(dataSet).transform(dataSet);
 
         OneHotEncoderEstimator encoder = new OneHotEncoderEstimator();
         encoder.setInputCols(new String[]{"conditionIndex", "gradeIndex", "zipcodeIndex"});
         encoder.setOutputCols(new String[]{"conditionVector", "gradeVector", "zipcodeVector"});
-        dataSet = encoder.fit(dataSet).transform(dataSet);
 
-        dataSet.show();
-
-        /*
-         * 3. Data preparation
-         */
         // Assembling a Vector of Features
         VectorAssembler assembler = new VectorAssembler()
                 .setInputCols(new String[]{"bedrooms", "bathrooms", "sqft_living", "sqft_above_percentage", "floors", "conditionVector", "gradeVector", "zipcodeVector", "waterfront"})
                 .setOutputCol("features");
 
-        // Preparing model input data
-        Dataset<Row> modelInputData = assembler.transform(dataSet)
-                .select("price", "features")
-                .withColumnRenamed("price", "label");
-
-//        modelInputData.show();
-
-        // Split data intro train, test and holdOut
-        Dataset<Row>[] dataSplits = modelInputData.randomSplit(new double[]{0.8, 0.2});
-        Dataset<Row> trainAndTest = dataSplits[0];
-        Dataset<Row> holdOut = dataSplits[1];
-
-        /*
-         * 4. Choosing model fitting parameters
-         */
         LinearRegression linearRegression = new LinearRegression();
 
         ParamMap[] paramMaps = new ParamGridBuilder()
@@ -130,19 +90,31 @@ public class HousePriceAnalysis {
                 .setEstimatorParamMaps(paramMaps)
                 .setTrainRatio(0.8);
 
+        Pipeline pipeline = new Pipeline();
+        pipeline.setStages(new PipelineStage[]{conditionIndexer, gradeIndexer, zipcodeIndexer, encoder, assembler, trainValidationSplit});
+
         /*
          * 5. Model fitting
          */
-        TrainValidationSplitModel allModels = trainValidationSplit.fit(trainAndTest);
+        PipelineModel pipelineModel = pipeline.fit(trainAndTest);
+        TrainValidationSplitModel allModels = (TrainValidationSplitModel) pipelineModel.stages()[5];
         LinearRegressionModel bestModel = (LinearRegressionModel) allModels.bestModel();
 
         /*
          * 6. Evaluating the model
+         * RMSE smaller the better
+         * r2 closer to 1 the better
          */
-        double rmseTrainAndTest = bestModel.summary().rootMeanSquaredError(); // smaller the better
-        double r2TrainAndTest = bestModel.summary().r2(); // closer to 1 the better
-        double rmseHoldOut = bestModel.evaluate(holdOut).rootMeanSquaredError();
-        double r2HoldOut = bestModel.evaluate(holdOut).r2();
+        // The model fitting is performed only in the trainAndTest data set, so in order to evaluate the model with the
+        // holdOut data, we have to call transform in the pipelineModel with the holdOut data and drop the column
+        // "prediction" in order to be able to call evaluate, otherwise is going to throw an error saying that the
+        // column "prediction" already exists.
+        Dataset<Row> holdOutResults = pipelineModel.transform(holdOut).drop("prediction");
+
+        double rmseTrainAndTest = bestModel.summary().rootMeanSquaredError();
+        double r2TrainAndTest = bestModel.summary().r2();
+        double rmseHoldOut = bestModel.evaluate(holdOutResults).rootMeanSquaredError();
+        double r2HoldOut = bestModel.evaluate(holdOutResults).r2();
 
         System.out.println("Intercept = " + bestModel.intercept() + "\ncoefficients = " + bestModel.coefficients());
         System.out.println("[trainAndTest] RMSE = " + rmseTrainAndTest + "\n[trainAndTest] R2 = " + r2TrainAndTest);
