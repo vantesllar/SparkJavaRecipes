@@ -19,7 +19,8 @@ import static org.apache.spark.sql.functions.*;
 
 
 /**
- * In this example
+ * In this example we use Linear Regression to predict how many videos will customers watch next month,
+ * using SparkSQL and ml.
  */
 public class PredictingHowManyVideosWillCustomerWatchNextMonth {
 
