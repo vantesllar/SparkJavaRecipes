@@ -33,7 +33,7 @@ public class HousePriceAnalysis {
         SparkSession session = SparkSession.builder()
                 .appName("HousePriceAnalysis")
                 .master("local[*]")
-//                .config("spark.sql.warehouse.dir", "file:///c:/tmp/") // Windows
+//                .config("spark.sql.warehouse.dir", "file:///d:/tmp/") // Windows
                 .config("spark.sql.warehouse.dir", "file:/Users/ivan/Desktop/tmp/") // macOS
                 .getOrCreate();
 

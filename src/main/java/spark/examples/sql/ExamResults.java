@@ -24,7 +24,7 @@ public class ExamResults {
         SparkSession session = SparkSession.builder()
                 .appName("learningSparkSQL")
                 .master("local[*]")
-//                .config("spark.sql.warehouse.dir", "file:///c:/tmp/") // Windows
+//                .config("spark.sql.warehouse.dir", "file:///d:/tmp/") // Windows
                 .config("spark.sql.warehouse.dir", "file:/Users/ivan/Desktop/tmp/") // macOS
                 .getOrCreate();
 
