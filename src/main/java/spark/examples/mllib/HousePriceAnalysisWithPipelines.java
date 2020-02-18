@@ -29,7 +29,7 @@ public class HousePriceAnalysisWithPipelines {
          * Initialization
          */
         // The following property has to be set only on windows environments
-        System.setProperty("hadoop.home.dir", "D:/cursos/spark/Practicals/winutils-extra/hadoop");
+        System.setProperty("hadoop.home.dir", "d:/dev/hadoop");
 
         Logger.getLogger("org.apache").setLevel(Level.WARN);
 
