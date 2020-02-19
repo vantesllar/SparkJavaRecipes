@@ -9,6 +9,9 @@ import org.apache.spark.sql.streaming.OutputMode;
 import org.apache.spark.sql.streaming.StreamingQuery;
 import org.apache.spark.sql.streaming.StreamingQueryException;
 
+/**
+ * This class uses ViewReportsSimulatorForBothViewingFigures as source of data
+ */
 public class ViewingFiguresStructuredVersion {
 
     public static void main(String[] args) throws InterruptedException, StreamingQueryException {

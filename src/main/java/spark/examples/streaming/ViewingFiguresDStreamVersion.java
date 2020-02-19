@@ -19,6 +19,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class uses ViewReportsSimulatorForBothViewingFigures as source of data
+ */
 public class ViewingFiguresDStreamVersion {
 
     public static void main(String[] args) throws InterruptedException {

@@ -5,6 +5,9 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+/**
+ * This class serves to produce test data for the class LogStreamAnalysis
+ */
 public class LoggingServerForLogStreamAnalysis {
 
 	public static void main(String[] args) throws IOException, InterruptedException 

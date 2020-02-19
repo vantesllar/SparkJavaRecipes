@@ -9,6 +9,9 @@ import org.apache.spark.streaming.api.java.JavaReceiverInputDStream;
 import org.apache.spark.streaming.api.java.JavaStreamingContext;
 import scala.Tuple2;
 
+/**
+ * This class uses LoggingServerForLogStreamAnalysis as source of data
+ */
 public class LogStreamAnalysis {
 
     public static void main(String[] args) throws InterruptedException {
