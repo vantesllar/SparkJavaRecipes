@@ -10,7 +10,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 
 import scala.Tuple2;
-import spark.examples.Util;
+import spark.examples.utils.Util;
 
 /**
  * In this example we try to find the 10 most frequent words inside a data set consisting of the captions of
@@ -20,8 +20,10 @@ public class Finding10MostFrequentWords {
 
 	@SuppressWarnings("resource")
 	public static void main(String[] args) {
-		
+
+		// The following property has to be set only on windows environments
 		System.setProperty("hadoop.home.dir", "d:/dev/hadoop");
+
 		Logger.getLogger("org.apache").setLevel(Level.WARN);
 		
 		SparkConf conf = new SparkConf().setAppName("startingSpark").setMaster("local[*]");

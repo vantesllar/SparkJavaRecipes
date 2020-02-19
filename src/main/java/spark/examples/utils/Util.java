@@ -1,4 +1,4 @@
-package spark.examples;
+package spark.examples.utils;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
